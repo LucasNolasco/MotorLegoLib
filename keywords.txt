@@ -1,0 +1,8 @@
+Motor_Lego	KEYWORD1
+Eixo	KEYWORD1
+moverDistancia	KEYWORD2
+moverVelocidade	KEYWORD2
+girar	KEYWORD2
+girarPara	KEYWORD2
+posicao	KEYWORD2
+returnK	KEYWORD2

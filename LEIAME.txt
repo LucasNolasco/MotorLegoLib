@@ -1,0 +1,8 @@
+Motor_Lego(en, m1, m2, encoder, raio) // en = enable, (m1,m2) = pinos ponte H
+Eixo(en_e, me1, me2, en_d, md1, md2, encoder, raio) // (en_e,en_d) = enables, (md1,md2,me1,me2) = pinos ponte H
+
+moverDistancia(distancia, velocidade) //Distancia na mesma unidade do raio, velocidade -100 até 100
+moverVelocidade(velocidade) // velocidade -100 a 100
+posicao() // retorna o grau atual
+girar(graus, velocidade) // gira uma quantidade especifica de graus
+girarPara(graus, velocidade) // vai direto para uma posicao especifica
