@@ -47,7 +47,7 @@ Motor_Lego::Motor_Lego(int _en, int _m1, int _m2, int _enc1, int _enc2, int _rai
 
  	    for(int i = 0; i < 6; i++)
  	    {
- 	    	if(motores[i] != NULL)
+ 	    	if(motores[i] == NULL)
  	    	{
  	    		motores[i] = this;
  	    		break;
