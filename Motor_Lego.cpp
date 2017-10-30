@@ -8,6 +8,7 @@ int Eixo::grau4;
 int Eixo::grau5;
 
 Motor_Lego** Motor_Lego::motores = new Motor_Lego*[6];
+bool Motor_Lego::init = false;
 
 void contadorGiros()
 {
@@ -41,29 +42,32 @@ Motor_Lego::Motor_Lego(int _en, int _m1, int _m2, int _enc1, int _enc2, int _rai
     {
       	for(ka = 0; enc1 != interrupt[ka]; ka++);
       	for(kb = 0; enc2 != interrupt[kb]; kb++);
+	    
+	pinMode(ka, INPUT);
+	pinMode(kb, INPUT);
  
- 		attachInterrupt(ka, contadorGiros, RISING);
- 	    attachInterrupt(kb, contadorGiros, RISING);
+ 	attachInterrupt(ka, contadorGiros, RISING);
+ 	attachInterrupt(kb, contadorGiros, RISING);
+	    
+	if(!init)
+	    for(int i = 0; i < 6; i++)
+		Motor_Lego::motores[i] = NULL;
+	    
+	init = true;
 
- 	    for(int i = 0; i < 6; i++)
+ 	for(int i = 0; i < 6; i++)
+ 	{
+ 	    if(Motor_Lego::motores[i] == NULL)
  	    {
- 	    	if(Motor_Lego::motores[i] == NULL)
- 	    	{
- 	    		Motor_Lego::motores[i] = this;
- 	    		break;
- 	    	}
+ 	    	Motor_Lego::motores[i] = this;
+ 	    	break;
  	    }
+ 	}
 
       	pinMode(en, OUTPUT);
       	pinMode(m1, OUTPUT);
       	pinMode(m2, OUTPUT);
     }
-
-void Motor_Lego::begin()
-{
-	for(int i = 0; i < 6; i++)
-		Motor_Lego::motores[i] = NULL;
-}
 
 void Motor_Lego::moverDistancia(int i, int j){
       pose_init = posicao();
