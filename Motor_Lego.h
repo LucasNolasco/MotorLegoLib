@@ -14,7 +14,6 @@ public:
     int getKa();
     int getKb();
     void giro(int step_novo, int sentido);
-    void begin();
 private:
     int graus, step, ultimo_step, penult_step;  
     int interrupt[6] = {2, 3, 21, 20, 19, 18};
@@ -22,6 +21,7 @@ private:
     int raio, pose_init, position, var1, var2;
     int tol = 10;
     static Motor_Lego** motores;
+    static bool init;
 
     friend void contadorGiros();
 };
