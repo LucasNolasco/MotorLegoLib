@@ -1,4 +1,4 @@
-#include "Motor_Lego.h"
+﻿#include "Motor_Lego.h"
 
 int Eixo::grau0;
 int Eixo::grau1;
@@ -12,8 +12,8 @@ bool Motor_Lego::init = false;
 
 void contadorGiros()
 {
-	int seq_pos[] = {3, 1, 0, 2}; // sequencia esperada para um giro 'positivo'
-	int seq_neg[] = {3, 2, 0, 1}; // sequencia esperada para um giro 'negativo'
+	int seq_pos[] = {3, 2, 0, 1}; // sequencia esperada para um giro 'positivo'
+	int seq_neg[] = {3, 1, 0, 2}; // sequencia esperada para um giro 'negativo'
 	int step, j; // variavel para salvar o passo atual do motor
 
 	for(int i = 0; i < 6; i++) // loop para verificar todos os motores do vetor
@@ -21,17 +21,20 @@ void contadorGiros()
 		if(Motor_Lego::motores[i] != NULL) // verifica se existe um vetor naquela posicao
 		{
 			step = digitalRead(Motor_Lego::motores[i]->enc2) * 2 + digitalRead(Motor_Lego::motores[i]->enc1); // confere o passo atual do motor
-			for(j = 0; seq_neg[j] != Motor_Lego::motores[i]->penult_step; j++); // encontra o penultimo passo na lista  de sequencias
-
-			if(seq_neg[(j + 1) % 4]  == Motor_Lego::motores[i]->ultimo_step && seq_neg[(j + 2) % 4] == step) // verifica se a sequencia de passos executados bate com o esperado
+			for(j = 0; seq_neg[j] != Motor_Lego::motores[i]->ultimo_step; j++); // encontra o penultimo passo na lista  de sequencias
+			if(seq_neg[(j + 1) % 4]  == Motor_Lego::motores[i]->step && seq_neg[(j + 2) % 4] == step) // verifica se a sequencia de passos executados bate com o esperado
 				Motor_Lego::motores[i]->giro(step, -1); // registra o giro
 
 			else // caso não coincida é verificado o giro no outro sentido
 			{
-				for(int j = 0; seq_pos[j] != Motor_Lego::motores[i]->penult_step; j++); // encontra a posição do penultimo passo na sequencia
+				for(j = 0; seq_pos[j] != Motor_Lego::motores[i]->ultimo_step; j++); // encontra a posição do penultimo passo na sequencia
 
-				if(seq_pos[(j + 1) % 4]  == Motor_Lego::motores[i]->ultimo_step && seq_pos[(j + 2) % 4] == step) // verifica se a sequencia bate com o esperado
+				if(seq_pos[(j + 1) % 4]  == Motor_Lego::motores[i]->step && seq_pos[(j + 2) % 4] == step) // verifica se a sequencia bate com o esperado
 					Motor_Lego::motores[i]->giro(step, 1); // registra o giro
+				else
+				{
+					Motor_Lego::motores[i]->giro(step, 0); 
+				}
 			}
 		}
 	}
@@ -40,14 +43,17 @@ void contadorGiros()
 Motor_Lego::Motor_Lego(int _en, int _m1, int _m2, int _enc1, int _enc2, int _raio)
     :en(_en), m1(_m1), m2(_m2), enc1(_enc1), enc2(_enc2), raio(_raio)
     {
+	ultimo_step = 3;
+	step = 2;
+
       	for(ka = 0; enc1 != interrupt[ka]; ka++);
       	for(kb = 0; enc2 != interrupt[kb]; kb++);
 	    
 	pinMode(ka, INPUT);
 	pinMode(kb, INPUT);
  
- 	attachInterrupt(ka, contadorGiros, RISING);
- 	attachInterrupt(kb, contadorGiros, RISING);
+ 	attachInterrupt(ka, contadorGiros, CHANGE);
+ 	attachInterrupt(kb, contadorGiros, CHANGE);
 	    
 	if(!init)
 	    for(int i = 0; i < 6; i++)
@@ -110,10 +116,10 @@ void Motor_Lego::girar(int m, int n){
 	position = posicao();
 	while(true){
 		graus = posicao();
-		if(graus > ((position + m) % 360)){
+		if(graus < ((position + m) % 360)){
 			moverVelocidade(n);
 		}
-		else if(graus < (((position - m) + 360) % 360)){
+		if(graus > (((position - m) + 360) % 360)){
 			moverVelocidade(-1 * n);
 		}
 		else{
@@ -135,7 +141,7 @@ void Motor_Lego::girarPara(int o, int p){
 				moverVelocidade(p);
 			}
 			else if(graus < var2){
-				moverVelocidade(p);
+				moverVelocidade(-1 * p);
 			}
 			else{
 				moverVelocidade(0);
@@ -144,7 +150,7 @@ void Motor_Lego::girarPara(int o, int p){
 		}
 		else{
 			if(graus < var1){
-				moverVelocidade(p);
+				moverVelocidade(-p);
 			}
 			else if(graus < var2){
 				moverVelocidade(p);
@@ -168,7 +174,7 @@ void Motor_Lego::giro(int step_novo, int sentido){
 		if(graus >= 360)
 			graus = graus % 360;
 	}
-	else
+	else if(sentido < 0)
 	{
 		graus--;
 		if(graus < 0)
