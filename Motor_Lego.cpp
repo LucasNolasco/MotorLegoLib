@@ -75,6 +75,13 @@ Motor_Lego::Motor_Lego(int _en, int _m1, int _m2, int _enc1, int _enc2, int _rai
       	pinMode(m2, OUTPUT);
     }
 
+void Motor_Lego::setPID(int _kp, int _ki, int _kd)
+{
+	kp = _kp;
+	ki = _ki;
+	kd = _kd;
+}
+
 void Motor_Lego::moverDistancia(int i, int j){
       pose_init = posicao();
       while(true){
@@ -112,55 +119,78 @@ void Motor_Lego::moverVelocidade(int l){
 	 }
     }
 
-void Motor_Lego::girar(int m, int n){
-	position = posicao();
-	while(true){
-		graus = posicao();
-		if(graus < ((position + m) % 360)){
-			moverVelocidade(n);
+void Motor_Lego::girarPID(int _graus)
+{
+	int P, I, D, erro, last_pos, tempo, velocidade, objetivo;
+
+	objetivo = posicao() + _graus;
+	last_pos = posicao();
+	tempo = millis();
+	erro = objetivo - posicao();
+	I = 0;
+
+	while(abs(erro) > tol)
+	{
+		P = kp * erro;
+		I += ki * (posicao() - last_pos) * (millis() - tempo) * 0.001;
+		D =  kd * (posicao() - last_pos) / ((millis() - tempo) * 0.001);
+
+		last_pos = posicao();
+		tempo = millis();
+
+		velocidade = P + I + D;
+
+		if(velocidade > 100)
+			velocidade = 100;
+
+		else if(velocidade < -100)
+			velocidade = - 100;
+
+		moverVelocidade(velocidade);
+
+		if(abs(posicao() - last_pos) > 350)
+		{
+			if(objetivo >= 360)
+				objetivo %= 360;
+
+			else if(objetivo < 0)
+				objetivo += 360;
 		}
-		if(graus > (((position - m) + 360) % 360)){
-			moverVelocidade(-1 * n);
-		}
-		else{
-			moverVelocidade(0);
-			break;
-		}
+
+		erro = objetivo - posicao();
 	}
 }
- 
-void Motor_Lego::girarPara(int o, int p){
-	while(true){
-		o = o % 360;
-		graus = posicao();	
-		var1 = ((o + tol) % 360);
-		var2 = (((o - tol) + 360) % 360);
 
-		if(var1 > var2){
-			if(graus > var1){
-				moverVelocidade(p);
-			}
-			else if(graus < var2){
-				moverVelocidade(-1 * p);
-			}
-			else{
-				moverVelocidade(0);
-				break;
-			}
-		}
-		else{
-			if(graus < var1){
-				moverVelocidade(-p);
-			}
-			else if(graus < var2){
-				moverVelocidade(p);
-			}
-			else{
-				moverVelocidade(0);
-				break;
-			}
-		}
-	}
+void Motor_Lego::girar(int _graus, int _vel)
+{
+	int erro, velocidade, objetivo;
+
+	objetivo = posicao() + _graus;
+
+	if(objetivo >= 360)
+		objetivo %= 360;
+
+	else if(objetivo < 0)
+		objetivo += 360;
+
+	erro = objetivo - posicao();
+
+	if(_graus > 0)
+		velocidade = _vel;
+
+	else if(_graus < 0)
+		velocidade = - _vel;
+
+	moverVelocidade(velocidade);
+
+	while(abs(erro) > tol)
+		erro = objetivo - posicao();
+
+	moverVelocidade(0);
+}
+ 
+void Motor_Lego::girarPara(int _graus){
+	girarPID(_graus - posicao());
 }
 
 void Motor_Lego::giro(int step_novo, int sentido){

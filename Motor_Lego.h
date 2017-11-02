@@ -8,17 +8,21 @@ public:
     Motor_Lego(int _en, int _m1, int _m2, int _enc1, int _enc2, int _raio);
     void moverDistancia(int i, int j);
     void moverVelocidade(int l);
-    void girar(int m, int n);
-    void girarPara(int o, int p);
+    void girarPID(int _graus);
+    void girar(int _graus, int _vel);
+    void girarPara(int _graus);
     int posicao();
     int getKa();
     int getKb();
     void giro(int step_novo, int sentido);
+    void setPID(int _kp, int _ki, int _kd);
+
 private:
     int graus, step, ultimo_step, penult_step;  
     int interrupt[6] = {2, 3, 21, 20, 19, 18};
     int en, m1, m2, enc1, enc2, ka, kb;
-    int raio, pose_init, position, var1, var2;
+    int raio, pose_init, var1, var2;
+    int ki, kp, kd, erro;
     int tol = 10;
     static Motor_Lego** motores;
     static bool init;
